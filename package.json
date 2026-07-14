@@ -4,9 +4,12 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~56.0.18",
+    "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@rnrepo/expo-config-plugin": "^0.3.3",
     "axios": "^1.18.1",
     "expo": "~56.0.12",
+    "expo-asset": "~56.0.17",
     "expo-audio": "~56.0.12",
     "expo-background-task": "~56.0.19",
     "expo-build-properties": "~56.0.19",
@@ -14,6 +17,7 @@
     "expo-constants": "~56.0.17",
     "expo-dev-client": "~56.0.20",
     "expo-device": "~56.0.4",
+    "expo-file-system": "~56.0.8",
     "expo-font": "~56.0.5",
     "expo-glass-effect": "~56.0.4",
     "expo-image": "~56.0.11",
@@ -46,13 +50,15 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~56.0.4",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint"
   },
