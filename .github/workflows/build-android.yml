@@ -53,89 +53,65 @@ jobs:
           fi
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > keystore.jks
 
-      # Determine which build profile to use
-      - name: Set build profile
-        id: profile
+      # Determine build profile and version
+      - name: Set build profile & version
+        id: meta
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "profile=${{ github.event.inputs.build_type }}" >> $GITHUB_OUTPUT
+            PROFILE="${{ github.event.inputs.build_type }}"
+            VERSION="${{ github.event.inputs.version }}"
           else
             TAG="${GITHUB_REF#refs/tags/}"
             if [[ "$TAG" == *"-dev"* ]]; then
-              echo "profile=development" >> $GITHUB_OUTPUT
+              PROFILE="development"
+              VERSION="${TAG%-dev}"
             else
-              echo "profile=production" >> $GITHUB_OUTPUT
+              PROFILE="production"
+              VERSION="${TAG}"
             fi
           fi
+          echo "profile=${PROFILE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      # Extract the version number (strip "-dev" from tag if present)
-      - name: Determine version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            TAG="${{ github.ref_name }}"
-            if [[ "$TAG" == *"-dev"* ]]; then
-              CLEAN_TAG="${TAG%-dev}"
-              echo "version=${CLEAN_TAG}" >> $GITHUB_OUTPUT
-            else
-              echo "version=${TAG}" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-      # Read the project name from app.json
+      # Read project name from app.json
       - name: Get project name
         id: project
         run: |
-          NAME=$(jq -r '.name' app.json)
+          NAME=$(jq -r '.expo.name' app.json)
           if [ -z "$NAME" ] || [ "$NAME" == "null" ]; then
-            echo "⚠️ Could not read name from app.json, using 'App' as fallback"
             NAME="App"
           fi
           echo "name=${NAME}" >> $GITHUB_OUTPUT
 
-      # Construct the final APK filename
-      - name: Set APK name
-        id: apk_name
+      # Construct the APK filename
+      - name: Build APK filename
+        id: apk
         run: |
           BASE="${{ steps.project.outputs.name }}"
-          VERSION="${{ steps.version.outputs.version }}"
-          PROFILE="${{ steps.profile.outputs.profile }}"
-          ARCH="arm64-v8a"
+          VERSION="${{ steps.meta.outputs.version }}"
+          PROFILE="${{ steps.meta.outputs.profile }}"
+          SUFFIX="$([ "$PROFILE" == "development" ] && echo "-dev" || echo "")"
+          echo "apk_name=${BASE}${SUFFIX}-${VERSION}-arm64-v8a.apk" >> $GITHUB_OUTPUT
 
-          if [ "$PROFILE" == "development" ]; then
-            SUFFIX="-dev"
-          else
-            SUFFIX=""
-          fi
-
-          APK_NAME="${BASE}${SUFFIX}-${VERSION}-${ARCH}.apk"
-          echo "apk_name=${APK_NAME}" >> $GITHUB_OUTPUT
-          echo "APK_NAME=${APK_NAME}" >> $GITHUB_ENV
-
-      - name: Build APK (only arm64-v8a)
+      # Build the APK – no obsolete flags, keystore via environment variables
+      - name: Build APK (arm64-v8a only)
         env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          EAS_ANDROID_KEYSTORE_PATH: ./keystore.jks
+          EAS_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          EAS_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          EAS_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           eas build --platform android \
-            --profile ${{ steps.profile.outputs.profile }} \
+            --profile ${{ steps.meta.outputs.profile }} \
             --local \
-            --output ./${{ steps.apk_name.outputs.apk_name }} \
-            --non-interactive \
-            --android-keystore-path ./keystore.jks \
-            --android-keystore-password "$ANDROID_KEYSTORE_PASSWORD" \
-            --android-key-password "$ANDROID_KEY_PASSWORD" \
-            --android-key-alias "$ANDROID_KEY_ALIAS" \
-            --android-architecture arm64-v8a
+            --output ./${{ steps.apk.outputs.apk_name }} \
+            --non-interactive
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.apk_name.outputs.apk_name }}
-          path: ./${{ steps.apk_name.outputs.apk_name }}
+          name: ${{ steps.apk.outputs.apk_name }}
+          path: ./${{ steps.apk.outputs.apk_name }}
           retention-days: 30
 
       - name: Create GitHub Release (only on tag pushes)
@@ -143,4 +119,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: ./${{ steps.apk_name.outputs.apk_name }}
+          files: ./${{ steps.apk.outputs.apk_name }}
