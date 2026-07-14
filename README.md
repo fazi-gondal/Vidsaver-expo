@@ -54,3 +54,17 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+Tag Command
+
+```
+git tag -a v1.0.0-dev -m "Development build"
+git push origin v1.0.0-dev
+```
+
+
+For Production
+```
+git tag -a v1.0.0 -m "Production release"
+git push origin v1.0.0
+```
