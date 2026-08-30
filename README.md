@@ -68,3 +68,5 @@ For Production
 git tag -a v1.0.0 -m "Production release"
 git push origin v1.0.0
 ```
+
+**Make with love by Fazi Gondal**
