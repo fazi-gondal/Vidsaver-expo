@@ -16,6 +16,8 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+**Expo version 56**
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
@@ -69,4 +71,7 @@ git tag -a v1.0.0 -m "Production release"
 git push origin v1.0.0
 ```
 
+---
 **Make with love by Fazi Gondal**
+
+---
