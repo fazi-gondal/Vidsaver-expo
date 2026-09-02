@@ -4,6 +4,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 **currently this project is under development**
 
+**The backend of this project is also under development**
 ## Get started
 
 1. Install dependencies
