@@ -6,6 +6,8 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 **Shifting the Expo SDK from 56 to 57**
 
+**The app UI is going to redesign using Expo UI**
+
 **The backend of this project is also under development**
 ## Get started
 
