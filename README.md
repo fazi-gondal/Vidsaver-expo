@@ -8,6 +8,8 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 **The app UI is going to redesign using Expo UI**
 
+**Going to use material 3 for UI design**
+
 **The backend of this project is also under development**
 ## Get started
 
